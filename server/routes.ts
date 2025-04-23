@@ -73,6 +73,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/clients/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // First delete all invoices associated with this client
+      const clientInvoices = await storage.getInvoicesByClientId(id);
+      for (const invoice of clientInvoices) {
+        await storage.deleteInvoice(invoice.id);
+      }
+      
+      // Then delete all projects associated with this client
+      const clientProjects = await storage.getProjectsByClientId(id);
+      for (const project of clientProjects) {
+        await storage.deleteProject(project.id);
+      }
+      
+      // Finally delete the client
       const success = await storage.deleteClient(id);
       
       if (!success) {
@@ -153,6 +167,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.delete("/api/projects/:id", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
+      
+      // First delete all invoices associated with this project
+      const projectInvoices = await storage.getInvoicesByProjectId(id);
+      for (const invoice of projectInvoices) {
+        await storage.deleteInvoice(invoice.id);
+      }
+      
+      // Then delete the project
       const success = await storage.deleteProject(id);
       
       if (!success) {
