@@ -15,8 +15,7 @@ export async function generateInvoicePDF(
   invoice: Invoice,
   client: Client,
   project: Project,
-  workdays: Workday[],
-  user: User
+  workdays: Workday[]
 ): Promise<Buffer> {
   // In a real implementation, this function would create a PDF document
   // using PDFKit or a similar library.

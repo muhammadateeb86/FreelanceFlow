@@ -27,11 +27,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const client = await storage.getClient(id);
-      
+
       if (!client) {
         return res.status(404).json({ message: "Client not found" });
       }
-      
+
       res.json(client);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch client" });
@@ -56,11 +56,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const validatedData = insertClientSchema.partial().parse(req.body);
       const client = await storage.updateClient(id, validatedData);
-      
+
       if (!client) {
         return res.status(404).json({ message: "Client not found" });
       }
-      
+
       res.json(client);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -74,11 +74,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteClient(id);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Client not found" });
       }
-      
+
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete client" });
@@ -89,14 +89,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects", async (req: Request, res: Response) => {
     try {
       const clientId = req.query.clientId ? parseInt(req.query.clientId as string) : undefined;
-      
+
       let projects;
       if (clientId) {
         projects = await storage.getProjectsByClientId(clientId);
       } else {
         projects = await storage.getProjects();
       }
-      
+
       res.json(projects);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch projects" });
@@ -107,11 +107,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const project = await storage.getProject(id);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       res.json(project);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch project" });
@@ -136,11 +136,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const id = parseInt(req.params.id);
       const validatedData = insertProjectSchema.partial().parse(req.body);
       const project = await storage.updateProject(id, validatedData);
-      
+
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       res.json(project);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -154,11 +154,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteProject(id);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete project" });
@@ -193,11 +193,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteWorkday(id);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Workday not found" });
       }
-      
+
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete workday" });
@@ -209,7 +209,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const clientId = req.query.clientId ? parseInt(req.query.clientId as string) : undefined;
       const projectId = req.query.projectId ? parseInt(req.query.projectId as string) : undefined;
-      
+
       let invoices;
       if (clientId) {
         invoices = await storage.getInvoicesByClientId(clientId);
@@ -218,7 +218,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       } else {
         invoices = await storage.getInvoices();
       }
-      
+
       res.json(invoices);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch invoices" });
@@ -229,11 +229,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const invoice = await storage.getInvoice(id);
-      
+
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
       }
-      
+
       res.json(invoice);
     } catch (error) {
       res.status(500).json({ message: "Failed to fetch invoice" });
@@ -247,7 +247,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!invoiceData.invoiceNumber) {
         invoiceData.invoiceNumber = await storage.getNextInvoiceNumber();
       }
-      
+
       const validatedData = insertInvoiceSchema.parse(invoiceData);
       const invoice = await storage.createInvoice(validatedData);
       res.status(201).json(invoice);
@@ -263,17 +263,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { status } = req.body;
-      
+
       if (!status || !["pending", "paid", "overdue"].includes(status)) {
         return res.status(400).json({ message: "Invalid status value" });
       }
-      
+
       const invoice = await storage.updateInvoiceStatus(id, status);
-      
+
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
       }
-      
+
       res.json(invoice);
     } catch (error) {
       res.status(500).json({ message: "Failed to update invoice status" });
@@ -284,11 +284,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const success = await storage.deleteInvoice(id);
-      
+
       if (!success) {
         return res.status(404).json({ message: "Invoice not found" });
       }
-      
+
       res.status(204).send();
     } catch (error) {
       res.status(500).json({ message: "Failed to delete invoice" });
@@ -300,32 +300,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const invoice = await storage.getInvoice(id);
-      
+
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
       }
-      
+
       const client = await storage.getClient(invoice.clientId);
       if (!client) {
         return res.status(404).json({ message: "Client not found" });
       }
-      
+
       const project = await storage.getProject(invoice.projectId);
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       const workdays = await Promise.all(
         invoice.workdaysIds.map(wdId => storage.getWorkdaysByProjectId(project.id))
       );
-      
-      const user = await storage.getUser(1); // Assuming user ID 1 is the default user
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      const pdfBuffer = await generateInvoicePDF(invoice, client, project, workdays.flat(), user);
-      
+
+
+      const pdfBuffer = await generateInvoicePDF(invoice, client, project, workdays.flat());
+
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="invoice-${invoice.invoiceNumber}.pdf"`);
       res.end(pdfBuffer);
@@ -339,40 +335,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       const { recipient, subject, message } = req.body;
-      
+
       if (!recipient || !subject || !message) {
         return res.status(400).json({ 
           message: "Missing required fields", 
           fields: { recipient, subject, message } 
         });
       }
-      
+
       const invoice = await storage.getInvoice(id);
       if (!invoice) {
         return res.status(404).json({ message: "Invoice not found" });
       }
-      
+
       const client = await storage.getClient(invoice.clientId);
       if (!client) {
         return res.status(404).json({ message: "Client not found" });
       }
-      
+
       const project = await storage.getProject(invoice.projectId);
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
-      
+
       const workdays = await Promise.all(
         invoice.workdaysIds.map(wdId => storage.getWorkdaysByProjectId(project.id))
       );
-      
-      const user = await storage.getUser(1); // Assuming user ID 1 is the default user
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-      
-      const pdfBuffer = await generateInvoicePDF(invoice, client, project, workdays.flat(), user);
-      
+
+      const pdfBuffer = await generateInvoicePDF(invoice, client, project, workdays.flat());
+
       const emailSent = await sendEmail({
         to: recipient,
         subject,
@@ -385,7 +376,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         ]
       });
-      
+
       if (emailSent) {
         res.json({ message: "Invoice email sent successfully" });
       } else {
