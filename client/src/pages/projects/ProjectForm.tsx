@@ -238,7 +238,7 @@ const ProjectForm: React.FC<ProjectFormProps> = ({ projectId }) => {
                           </FormControl>
                           <SelectContent>
                             {clients.length === 0 ? (
-                              <SelectItem value="" disabled>
+                              <SelectItem value="_none" disabled>
                                 No clients available
                               </SelectItem>
                             ) : (
