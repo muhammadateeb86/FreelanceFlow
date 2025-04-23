@@ -36,17 +36,23 @@ const Dashboard = () => {
   
   // Fetch clients
   const { data: clients = [] } = useQuery<Client[]>({
-    queryKey: ['/api/clients']
+    queryKey: ['/api/clients'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 5000 // Refresh every 5 seconds
   });
   
   // Fetch projects with their client data
   const { data: projects = [], isLoading: projectsLoading } = useQuery<ProjectWithClient[]>({
-    queryKey: ['/api/projects']
+    queryKey: ['/api/projects'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 5000 // Refresh every 5 seconds
   });
   
   // Fetch recent invoices with client and project data
   const { data: invoices = [], isLoading: invoicesLoading } = useQuery<InvoiceWithDetails[]>({
-    queryKey: ['/api/invoices']
+    queryKey: ['/api/invoices'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 5000 // Refresh every 5 seconds
   });
   
   // Calculate dashboard stats

@@ -42,12 +42,16 @@ const Projects = () => {
   
   // Fetch projects
   const { data: projects = [], isLoading: projectsLoading, refetch } = useQuery<Project[]>({
-    queryKey: ['/api/projects']
+    queryKey: ['/api/projects'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 5000 // Refresh every 5 seconds
   });
   
   // Fetch clients for mapping client names
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
-    queryKey: ['/api/clients']
+    queryKey: ['/api/clients'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 5000 // Refresh every 5 seconds
   });
   
   // Delete project mutation

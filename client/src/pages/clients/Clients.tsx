@@ -39,7 +39,9 @@ const Clients = () => {
   const [clientToDelete, setClientToDelete] = useState<Client | null>(null);
   
   const { data: clients = [], isLoading, refetch } = useQuery<Client[]>({
-    queryKey: ['/api/clients']
+    queryKey: ['/api/clients'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 5000 // Refresh every 5 seconds
   });
   
   // Delete client mutation

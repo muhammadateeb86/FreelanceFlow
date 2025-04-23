@@ -114,13 +114,29 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
   const generateInvoiceMutation = useMutation({
     mutationFn: (data: CreateInvoiceInput) => 
       apiRequest('POST', '/api/invoices', data),
-    onSuccess: (response) => {
-      const invoiceId = response.id;
-      toast({
-        title: 'Success',
-        description: 'Invoice generated successfully',
-      });
-      navigate(`/invoices/${invoiceId}`);
+    onSuccess: (response: any) => {
+      // Make sure we have a valid invoice ID before navigating
+      if (response && response.id) {
+        toast({
+          title: 'Success',
+          description: 'Invoice generated successfully',
+        });
+        // Ensure we get the created invoice
+        queryClient.invalidateQueries({ queryKey: ['/api/invoices'] });
+        // Navigate with a small delay to ensure the invoice is accessible
+        setTimeout(() => {
+          navigate(`/invoices/${response.id}`);
+        }, 500);
+      } else {
+        toast({
+          title: 'Success',
+          description: 'Invoice generated successfully. Please check the Invoices page.',
+          variant: 'default',
+        });
+        // Fallback to invoices list if we don't have an ID
+        queryClient.invalidateQueries({ queryKey: ['/api/invoices'] });
+        navigate('/invoices');
+      }
     },
     onError: (error) => {
       toast({
@@ -216,8 +232,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
   const handleDayClick = (day: CalendarDay) => {
     if (day.isDisabled) return;
     
+    // Clone the date to make sure we don't have timezone issues
+    const fixedDate = new Date(day.date.getFullYear(), day.date.getMonth(), day.date.getDate());
+    
     // Toggle the workday in the database
-    toggleWorkdayMutation.mutate(day.date);
+    toggleWorkdayMutation.mutate(fixedDate);
   };
   
   // Handle project status change
