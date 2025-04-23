@@ -54,25 +54,30 @@ const Dashboard = () => {
   
   // Calculate dashboard stats
   useEffect(() => {
-    if (projects.length && clients.length && invoices.length) {
-      const activeProjects = projects.filter(p => p.status === 'in_progress').length;
-      const totalClients = clients.length;
-      
+    // Always get these counts even if arrays are empty
+    const activeProjects = projects.filter(p => p.status === 'in_progress').length;
+    const totalClients = clients.length;
+    
+    // For invoices, check if we have any before counting
+    let invoicesSent = 0;
+    let totalEarnings = 0;
+    
+    if (invoices.length > 0) {
       // Only count invoices as "sent" when they're not in pending status (paid or overdue)
-      const invoicesSent = invoices.filter(invoice => invoice.status !== 'pending').length;
+      invoicesSent = invoices.filter(invoice => invoice.status !== 'pending').length;
       
       // Only include paid invoices in total earnings
-      const totalEarnings = invoices
+      totalEarnings = invoices
         .filter(invoice => invoice.status === 'paid')
         .reduce((sum, invoice) => sum + invoice.amount, 0);
-      
-      setStats({
-        activeProjects,
-        totalClients,
-        invoicesSent,
-        totalEarnings
-      });
     }
+    
+    setStats({
+      activeProjects,
+      totalClients,
+      invoicesSent,
+      totalEarnings
+    });
   }, [projects, clients, invoices]);
   
   // Get recent projects (sorted by creation date)
