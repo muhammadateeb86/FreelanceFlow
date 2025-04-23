@@ -128,4 +128,6 @@ export interface SendInvoiceEmailInput {
   subject: string;
   message: string;
   attachPdf?: boolean;
+  userEmail: string;
+  userPassword: string;
 }

@@ -39,6 +39,8 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceId }) => {
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
   const [attachPdf, setAttachPdf] = useState(true);
+  const [userEmail, setUserEmail] = useState('');
+  const [userPassword, setUserPassword] = useState('');
   
   // Fetch invoice data
   const { data: invoice, isLoading: invoiceLoading } = useQuery<Invoice>({
@@ -104,6 +106,8 @@ const InvoicePreview: React.FC<InvoicePreviewProps> = ({ invoiceId }) => {
       subject,
       message,
       attachPdf,
+      userEmail,
+      userPassword,
     };
     
     sendEmailMutation.mutate(emailData);
@@ -421,6 +425,32 @@ John Doe`
             <label htmlFor="attach-pdf" className="text-sm text-muted-foreground cursor-pointer">
               Attach PDF Invoice
             </label>
+          </div>
+
+          <div>
+            <label htmlFor="userEmail" className="block text-sm font-medium text-muted-foreground mb-1">
+              Your Email *
+            </label>
+            <Input
+              id="userEmail"
+              type="email"
+              value={userEmail}
+              onChange={(e) => setUserEmail(e.target.value)}
+              className="bg-background"
+            />
+          </div>
+
+          <div>
+            <label htmlFor="userPassword" className="block text-sm font-medium text-muted-foreground mb-1">
+              Email Password *
+            </label>
+            <Input
+              id="userPassword"
+              type="password"
+              value={userPassword}
+              onChange={(e) => setUserPassword(e.target.value)}
+              className="bg-background"
+            />
           </div>
           
           <div className="flex justify-end">
