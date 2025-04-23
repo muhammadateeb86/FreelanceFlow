@@ -1,22 +1,59 @@
 
+import PDFDocument from 'pdfkit';
 import { Client, Invoice, Project, Workday } from "@shared/schema";
+import { formatCurrency, formatDate } from '@client/src/lib/utils';
 
-// Note: In a real implementation, this would use a proper PDF library
-// such as PDFKit. For this implementation, we're just returning a buffer 
 export async function generateInvoicePDF(
   invoice: Invoice,
   client: Client,
   project: Project,
   workdays: Workday[]
 ): Promise<Buffer> {
-  // In a real implementation, this function would create a PDF document
-  // using PDFKit or a similar library.
-  
-  // For now, we're just returning a placeholder buffer 
-  const dummyData = JSON.stringify({
-    invoice, client, project, workdays
+  return new Promise((resolve) => {
+    const doc = new PDFDocument();
+    const chunks: Buffer[] = [];
+
+    doc.on('data', (chunk) => chunks.push(chunk));
+    doc.on('end', () => resolve(Buffer.concat(chunks)));
+
+    // Header
+    doc.fontSize(20).text('INVOICE', { align: 'center' });
+    doc.moveDown();
+
+    // Invoice Details
+    doc.fontSize(12);
+    doc.text(`Invoice Number: ${invoice.invoiceNumber}`);
+    doc.text(`Date: ${formatDate(invoice.invoiceDate)}`);
+    doc.text(`Due Date: ${formatDate(invoice.dueDate)}`);
+    doc.moveDown();
+
+    // Client Details
+    doc.text('Bill To:');
+    doc.text(client.companyName);
+    if (client.contactPerson) doc.text(client.contactPerson);
+    if (client.address) doc.text(client.address);
+    doc.moveDown();
+
+    // Project Details
+    doc.text('Project:');
+    doc.text(`Name: ${project.name}`);
+    doc.text(`Type: ${project.type}`);
+    doc.moveDown();
+
+    // Workdays
+    doc.text('Work Period:');
+    const sortedWorkdays = [...workdays].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    if (sortedWorkdays.length > 0) {
+      doc.text(`From ${formatDate(sortedWorkdays[0].date)} to ${formatDate(sortedWorkdays[sortedWorkdays.length - 1].date)}`);
+    }
+    doc.text(`Total Days: ${workdays.length}`);
+    doc.moveDown();
+
+    // Amount
+    doc.fontSize(14);
+    doc.text('Amount Due:', { continued: true })
+       .text(formatCurrency(invoice.amount), { align: 'right' });
+
+    doc.end();
   });
-  
-  // This simulates returning a PDF buffer
-  return Buffer.from(dummyData);
 }
