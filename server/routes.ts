@@ -334,7 +334,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/invoices/:id/send", async (req: Request, res: Response) => {
     try {
       const id = parseInt(req.params.id);
-      const { recipient, subject, message } = req.body;
+      const { recipient, subject, message, attachPdf = true } = req.body;
 
       if (!recipient || !subject || !message) {
         return res.status(400).json({ 
