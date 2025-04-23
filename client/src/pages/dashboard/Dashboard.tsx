@@ -68,19 +68,26 @@ const Dashboard = () => {
   
   // Calculate dashboard stats
   useEffect(() => {
-    if (projects.length && clients.length && invoices.length) {
-      const activeProjects = projects.filter(p => p.status === 'in_progress').length;
-      const totalClients = clients.length;
-      const invoicesSent = invoices.length;
-      const totalEarnings = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
-      
-      setStats({
-        activeProjects,
-        totalClients,
-        invoicesSent,
-        totalEarnings
-      });
-    }
+    // Always calculate stats regardless of whether any arrays have elements
+    // This ensures we show zero values properly
+    const activeProjects = projects.filter(p => p.status === 'in_progress').length;
+    const totalClients = clients.length;
+    const invoicesSent = invoices.length;
+    const totalEarnings = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+    
+    setStats({
+      activeProjects,
+      totalClients,
+      invoicesSent,
+      totalEarnings
+    });
+    
+    console.log('Dashboard stats updated:', {
+      activeProjects,
+      totalClients,
+      invoicesSent,
+      totalEarnings
+    });
   }, [projects, clients, invoices]);
   
   // Get recent projects (sorted by creation date)

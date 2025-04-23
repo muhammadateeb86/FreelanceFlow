@@ -162,14 +162,21 @@ export class DatabaseStorage implements IStorage {
   
   async deleteProject(id: number): Promise<boolean> {
     try {
+      console.log(`Deleting workdays for project ${id}`);
       // First delete all workdays associated with this project
       await db.delete(workdays).where(eq(workdays.projectId, id));
       
+      console.log(`Deleting invoices for project ${id}`);
+      // Delete any invoices associated with this project
+      await db.delete(invoices).where(eq(invoices.projectId, id));
+      
+      console.log(`Now deleting project ${id}`);
       // Then delete the project
       const result = await db.delete(projects).where(eq(projects.id, id));
       return !!result;
     } catch (error) {
       console.error("Error deleting project:", error);
+      console.error(error instanceof Error ? error.stack : String(error));
       return false;
     }
   }
