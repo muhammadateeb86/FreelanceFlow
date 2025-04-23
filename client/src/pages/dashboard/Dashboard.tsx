@@ -57,8 +57,14 @@ const Dashboard = () => {
     if (projects.length && clients.length && invoices.length) {
       const activeProjects = projects.filter(p => p.status === 'in_progress').length;
       const totalClients = clients.length;
-      const invoicesSent = invoices.length;
-      const totalEarnings = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+      
+      // Only count invoices as "sent" when they're not in pending status (paid or overdue)
+      const invoicesSent = invoices.filter(invoice => invoice.status !== 'pending').length;
+      
+      // Only include paid invoices in total earnings
+      const totalEarnings = invoices
+        .filter(invoice => invoice.status === 'paid')
+        .reduce((sum, invoice) => sum + invoice.amount, 0);
       
       setStats({
         activeProjects,
