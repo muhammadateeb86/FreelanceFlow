@@ -90,7 +90,7 @@ export class DatabaseStorage implements IStorage {
   
   async deleteClient(id: number): Promise<boolean> {
     const result = await db.delete(clients).where(eq(clients.id, id));
-    return !!result;
+    return result.rowCount > 0;
   }
   
   // Project operations
@@ -132,7 +132,7 @@ export class DatabaseStorage implements IStorage {
   
   async deleteProject(id: number): Promise<boolean> {
     const result = await db.delete(projects).where(eq(projects.id, id));
-    return !!result;
+    return result.rowCount > 0;
   }
   
   // Workday operations
@@ -153,7 +153,7 @@ export class DatabaseStorage implements IStorage {
   
   async deleteWorkday(id: number): Promise<boolean> {
     const result = await db.delete(workdays).where(eq(workdays.id, id));
-    return !!result;
+    return result.rowCount > 0;
   }
   
   // Invoice operations
@@ -208,7 +208,7 @@ export class DatabaseStorage implements IStorage {
   
   async deleteInvoice(id: number): Promise<boolean> {
     const result = await db.delete(invoices).where(eq(invoices.id, id));
-    return !!result;
+    return result.rowCount > 0;
   }
   
   async getNextInvoiceNumber(): Promise<string> {
