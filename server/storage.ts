@@ -86,9 +86,16 @@ export class DatabaseStorage implements IStorage {
   }
   
   async updateClient(id: number, clientUpdate: Partial<InsertClient>): Promise<Client | undefined> {
+    // Handle emails array properly for database compatibility
+    const updateData = { ...clientUpdate };
+    
+    if (updateData.emails) {
+      updateData.emails = Array.isArray(updateData.emails) ? updateData.emails : [];
+    }
+    
     const [updatedClient] = await db
       .update(clients)
-      .set(clientUpdate)
+      .set(updateData)
       .where(eq(clients.id, id))
       .returning();
     return updatedClient || undefined;
@@ -220,6 +227,11 @@ export class DatabaseStorage implements IStorage {
     let invoiceToInsert = { ...invoice };
     if (!invoiceToInsert.invoiceNumber) {
       invoiceToInsert.invoiceNumber = await this.getNextInvoiceNumber();
+    }
+    
+    // Ensure workdaysIds is an array
+    if (invoiceToInsert.workdaysIds && !Array.isArray(invoiceToInsert.workdaysIds)) {
+      invoiceToInsert.workdaysIds = [];
     }
     
     const [newInvoice] = await db

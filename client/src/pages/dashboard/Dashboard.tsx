@@ -35,22 +35,36 @@ const Dashboard = () => {
   });
   
   // Fetch clients
-  const { data: clients = [] } = useQuery<Client[]>({
+  const { data: clients = [], refetch: refetchClients } = useQuery<Client[]>({
     queryKey: ['/api/clients'],
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    staleTime: 0 // Always treat data as stale to force refetch
   });
   
   // Fetch projects with their client data
-  const { data: projects = [], isLoading: projectsLoading } = useQuery<ProjectWithClient[]>({
+  const { data: projects = [], isLoading: projectsLoading, refetch: refetchProjects } = useQuery<ProjectWithClient[]>({
     queryKey: ['/api/projects'],
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
   
   // Fetch recent invoices with client and project data
-  const { data: invoices = [], isLoading: invoicesLoading } = useQuery<InvoiceWithDetails[]>({
+  const { data: invoices = [], isLoading: invoicesLoading, refetch: refetchInvoices } = useQuery<InvoiceWithDetails[]>({
     queryKey: ['/api/invoices'],
-    refetchOnWindowFocus: true
+    refetchOnWindowFocus: true,
+    staleTime: 0
   });
+  
+  // Force refresh data when component mounts
+  useEffect(() => {
+    const refreshData = async () => {
+      await refetchClients();
+      await refetchProjects();
+      await refetchInvoices();
+    };
+    
+    refreshData();
+  }, [refetchClients, refetchProjects, refetchInvoices]);
   
   // Calculate dashboard stats
   useEffect(() => {
