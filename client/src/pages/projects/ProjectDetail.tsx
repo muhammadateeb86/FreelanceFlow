@@ -232,8 +232,13 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
   const handleDayClick = (day: CalendarDay) => {
     if (day.isDisabled) return;
     
-    // Clone the date to make sure we don't have timezone issues
-    const fixedDate = new Date(day.date.getFullYear(), day.date.getMonth(), day.date.getDate());
+    // Clone the date and set time to midnight to avoid timezone issues
+    const fixedDate = new Date(Date.UTC(
+      day.date.getFullYear(),
+      day.date.getMonth(),
+      day.date.getDate(),
+      0, 0, 0, 0
+    ));
     
     // Toggle the workday in the database
     toggleWorkdayMutation.mutate(fixedDate);
