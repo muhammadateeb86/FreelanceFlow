@@ -150,7 +150,10 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
   // Initialize selected days from workdays when data is loaded
   useEffect(() => {
     if (workdays.length > 0) {
-      const selectedDates = workdays.map(w => new Date(w.date));
+      const selectedDates = workdays.map(w => {
+        const date = new Date(w.date);
+        return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+      });
       setSelectedDays(selectedDates);
     }
   }, [workdays]);
@@ -189,7 +192,11 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
         date,
         day,
         isCurrentMonth: true,
-        isSelected: selectedDays.some(d => d.toDateString() === date.toDateString()),
+        isSelected: selectedDays.some(d => 
+          d.getFullYear() === date.getFullYear() && 
+          d.getMonth() === date.getMonth() && 
+          d.getDate() === date.getDate()
+        ),
         isDisabled: false,
       });
     }
