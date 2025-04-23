@@ -365,10 +365,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const pdfBuffer = await generateInvoicePDF(invoice, client, project, workdays.flat());
 
       try {
+        // These would come from the user's session/request
+        const userEmail = req.body.userEmail;
+        const userPassword = req.body.userPassword;
+
+        if (!userEmail || !userPassword) {
+          return res.status(400).json({ message: "Email credentials required" });
+        }
+
         const emailSent = await sendEmail({
           to: recipient,
           subject,
           text: message,
+          userEmail,
+          userPassword,
           attachments: attachPdf ? [
             {
               filename: `invoice-${invoice.invoiceNumber}.pdf`,
