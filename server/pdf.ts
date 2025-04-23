@@ -10,111 +10,130 @@ export async function generateInvoicePDF(
   workdays: Workday[]
 ): Promise<Buffer> {
   return new Promise((resolve) => {
-    const doc = new PDFDocument({ margin: 50 });
+    const doc = new PDFDocument({ 
+      margin: 50,
+      size: 'A4',
+    });
+    
     const chunks: Buffer[] = [];
-
     doc.on('data', (chunk) => chunks.push(chunk));
     doc.on('end', () => resolve(Buffer.concat(chunks)));
 
-    // Company Header
-    doc.fontSize(24).text('INVOICE', { align: 'center' });
-    doc.fontSize(14).text(`#${invoice.invoiceNumber}`, { align: 'center' });
+    // Register a font for bold text
+    doc.font('Helvetica-Bold');
+    
+    // Header Section
+    doc.fontSize(28).text('INVOICE', { align: 'center' });
+    doc.fontSize(16).text(`#${invoice.invoiceNumber}`, { align: 'center' });
     doc.moveDown(2);
 
-    // Company and Client Info
-    doc.fontSize(16).text('FreelanceFlow', { align: 'right' });
-    doc.fontSize(10)
+    // Company Info - Right Aligned
+    doc.fontSize(18).text('FreelanceFlow', { align: 'right' });
+    doc.font('Helvetica').fontSize(10)
       .text('123 Main Street', { align: 'right' })
       .text('New York, NY 10001', { align: 'right' })
       .text('contact@freelanceflow.com', { align: 'right' });
-
     doc.moveDown(2);
 
-    // Bill To Section
-    doc.fontSize(10).text('Bill To:', { continued: true });
-    doc.moveDown();
-    doc.fontSize(12).text(client.companyName);
+    // Bill To Section - Left Aligned
+    doc.font('Helvetica-Bold').fontSize(10).text('Bill To:');
+    doc.font('Helvetica').fontSize(12).moveDown(0.5);
+    doc.text(client.companyName);
     if (client.contactPerson) doc.text(`Attn: ${client.contactPerson}`);
     if (client.address) doc.text(client.address);
     doc.text(client.billingEmail);
-
     doc.moveDown();
 
-    // Invoice Details Grid
-    const detailsX = 300;
-    doc.fontSize(10).text('Invoice Date:', detailsX);
-    doc.fontSize(12).text(formatDate(invoice.invoiceDate), detailsX + 100);
+    // Grid Details
+    const detailsX = 350;
+    const labelX = detailsX;
+    const valueX = detailsX + 120;
     
-    doc.fontSize(10).text('Due Date:', detailsX);
-    doc.fontSize(12).text(formatDate(invoice.dueDate), detailsX + 100);
-    
-    doc.fontSize(10).text('Project:', detailsX);
-    doc.fontSize(12).text(project.name, detailsX + 100);
-    
-    doc.fontSize(10).text('Amount Due:', detailsX);
-    doc.fontSize(12).text(formatCurrency(invoice.amount), detailsX + 100);
+    const addGridRow = (label: string, value: string) => {
+      doc.font('Helvetica-Bold').fontSize(10).text(label, labelX);
+      doc.font('Helvetica').fontSize(12).text(value, valueX, doc.y - doc.currentLineHeight());
+      doc.moveDown(0.5);
+    };
 
+    addGridRow('Invoice Date:', formatDate(invoice.invoiceDate));
+    addGridRow('Due Date:', formatDate(invoice.dueDate));
+    addGridRow('Project:', project.name);
+    addGridRow('Amount Due:', formatCurrency(invoice.amount));
     doc.moveDown(2);
 
     // Line Items Table
     const tableTop = doc.y;
-    const itemX = 50;
-    const descriptionX = itemX + 0;
-    const rateX = itemX + 250;
-    const quantityX = itemX + 350;
-    const amountX = itemX + 450;
+    const colPadding = 12;
+    const descriptionX = 50;
+    const rateX = 350;
+    const quantityX = 430;
+    const amountX = 510;
 
     // Table Headers
-    doc.fontSize(10)
-      .text('Description', descriptionX)
-      .text('Rate', rateX)
-      .text('Quantity', quantityX)
-      .text('Amount', amountX);
-
+    doc.font('Helvetica-Bold').fontSize(10);
+    doc.text('Description', descriptionX, tableTop);
+    doc.text('Rate', rateX, tableTop, { width: 70, align: 'center' });
+    doc.text('Qty', quantityX, tableTop, { width: 40, align: 'center' });
+    doc.text('Amount', amountX, tableTop, { width: 70, align: 'right' });
+    
+    // Draw header line
+    doc.moveTo(50, tableTop + 20).lineTo(580, tableTop + 20).stroke();
     doc.moveDown();
 
     // Table Content
+    doc.font('Helvetica').fontSize(11);
+    let currentY = tableTop + 35;
+
     if (project.type === 'daily_rate') {
-      // For daily rate projects, show each workday
       const sortedWorkdays = [...workdays].sort((a, b) => 
         new Date(a.date).getTime() - new Date(b.date).getTime()
       );
 
       sortedWorkdays.forEach(workday => {
-        doc.text(`Daily Rate - ${formatDate(workday.date)}`, descriptionX)
-           .text(formatCurrency(project.rate), rateX)
-           .text('1', quantityX)
-           .text(formatCurrency(project.rate), amountX);
-        doc.moveDown();
+        doc.text(`Daily Rate - ${formatDate(workday.date)}`, descriptionX, currentY);
+        doc.text(formatCurrency(project.rate), rateX, currentY, { width: 70, align: 'center' });
+        doc.text('1', quantityX, currentY, { width: 40, align: 'center' });
+        doc.text(formatCurrency(project.rate), amountX, currentY, { width: 70, align: 'right' });
+        currentY += 25;
       });
     } else {
-      // For fixed price projects, show one line item
-      doc.text(`${project.name} - Fixed Price`, descriptionX)
-         .text(formatCurrency(project.rate), rateX)
-         .text('1', quantityX)
-         .text(formatCurrency(project.rate), amountX);
+      doc.text(`${project.name} - Fixed Price`, descriptionX, currentY);
+      doc.text(formatCurrency(project.rate), rateX, currentY, { width: 70, align: 'center' });
+      doc.text('1', quantityX, currentY, { width: 40, align: 'center' });
+      doc.text(formatCurrency(project.rate), amountX, currentY, { width: 70, align: 'right' });
+      currentY += 25;
     }
 
-    doc.moveDown(2);
+    // Draw separator line
+    doc.moveTo(50, currentY + 10).lineTo(580, currentY + 10).stroke();
+    currentY += 30;
 
-    // Totals
-    doc.fontSize(10).text('Subtotal:', amountX - 100);
-    doc.fontSize(12).text(formatCurrency(invoice.amount), amountX);
-    
-    doc.fontSize(10).text('Tax (0%):', amountX - 100);
-    doc.fontSize(12).text('$0.00', amountX);
-    
-    doc.moveDown();
-    doc.fontSize(12).text('Total:', amountX - 100);
-    doc.fontSize(14).text(formatCurrency(invoice.amount), amountX);
+    // Totals section
+    const totalsX = 440;
+    const addTotalRow = (label: string, value: string, isFinal = false) => {
+      doc.font(isFinal ? 'Helvetica-Bold' : 'Helvetica').fontSize(isFinal ? 12 : 10);
+      doc.text(label, totalsX, currentY);
+      doc.text(value, amountX, currentY, { width: 70, align: 'right' });
+      currentY += 20;
+    };
 
-    // Notes
-    doc.moveDown(2);
-    doc.fontSize(10).text('Notes:');
-    doc.fontSize(10).text(invoice.notes || 'Thank you for your business! Payment is due within 14 days of invoice date.');
+    addTotalRow('Subtotal:', formatCurrency(invoice.amount));
+    addTotalRow('Tax (0%):', '$0.00');
+    currentY += 5;
+    // Draw line before final total
+    doc.moveTo(totalsX, currentY).lineTo(580, currentY).stroke();
+    currentY += 10;
+    addTotalRow('Total:', formatCurrency(invoice.amount), true);
+
+    // Notes Section
+    currentY += 40;
+    doc.font('Helvetica-Bold').fontSize(10).text('Notes:', 50, currentY);
+    doc.font('Helvetica').fontSize(10).moveDown(0.5);
+    doc.text(invoice.notes || 'Thank you for your business! Payment is due within 14 days of invoice date.');
     
     doc.moveDown();
     doc.text('Please make payment via bank transfer to the following account:');
+    doc.moveDown(0.5);
     doc.text('Bank: Example Bank');
     doc.text('Account Name: FreelanceFlow Inc.');
     doc.text('Account Number: XXXX-XXXX-XXXX-1234');
