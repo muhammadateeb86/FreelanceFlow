@@ -35,59 +35,38 @@ const Dashboard = () => {
   });
   
   // Fetch clients
-  const { data: clients = [], refetch: refetchClients } = useQuery<Client[]>({
+  const { data: clients = [] } = useQuery<Client[]>({
     queryKey: ['/api/clients'],
-    refetchOnWindowFocus: true,
-    staleTime: 0 // Always treat data as stale to force refetch
+    refetchOnWindowFocus: true
   });
   
   // Fetch projects with their client data
-  const { data: projects = [], isLoading: projectsLoading, refetch: refetchProjects } = useQuery<ProjectWithClient[]>({
+  const { data: projects = [], isLoading: projectsLoading } = useQuery<ProjectWithClient[]>({
     queryKey: ['/api/projects'],
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    refetchOnWindowFocus: true
   });
   
   // Fetch recent invoices with client and project data
-  const { data: invoices = [], isLoading: invoicesLoading, refetch: refetchInvoices } = useQuery<InvoiceWithDetails[]>({
+  const { data: invoices = [], isLoading: invoicesLoading } = useQuery<InvoiceWithDetails[]>({
     queryKey: ['/api/invoices'],
-    refetchOnWindowFocus: true,
-    staleTime: 0
+    refetchOnWindowFocus: true
   });
-  
-  // Force refresh data when component mounts
-  useEffect(() => {
-    const refreshData = async () => {
-      await refetchClients();
-      await refetchProjects();
-      await refetchInvoices();
-    };
-    
-    refreshData();
-  }, [refetchClients, refetchProjects, refetchInvoices]);
   
   // Calculate dashboard stats
   useEffect(() => {
-    // Always calculate stats regardless of whether any arrays have elements
-    // This ensures we show zero values properly
-    const activeProjects = projects.filter(p => p.status === 'in_progress').length;
-    const totalClients = clients.length;
-    const invoicesSent = invoices.length;
-    const totalEarnings = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
-    
-    setStats({
-      activeProjects,
-      totalClients,
-      invoicesSent,
-      totalEarnings
-    });
-    
-    console.log('Dashboard stats updated:', {
-      activeProjects,
-      totalClients,
-      invoicesSent,
-      totalEarnings
-    });
+    if (projects.length && clients.length && invoices.length) {
+      const activeProjects = projects.filter(p => p.status === 'in_progress').length;
+      const totalClients = clients.length;
+      const invoicesSent = invoices.length;
+      const totalEarnings = invoices.reduce((sum, invoice) => sum + invoice.amount, 0);
+      
+      setStats({
+        activeProjects,
+        totalClients,
+        invoicesSent,
+        totalEarnings
+      });
+    }
   }, [projects, clients, invoices]);
   
   // Get recent projects (sorted by creation date)
