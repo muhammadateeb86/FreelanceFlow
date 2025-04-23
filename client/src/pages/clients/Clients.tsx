@@ -53,6 +53,7 @@ const Clients = () => {
         description: 'The client has been deleted successfully.',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
       queryClient.invalidateQueries({ queryKey: ['/api/invoices'] });
       setClientToDelete(null);
     },
