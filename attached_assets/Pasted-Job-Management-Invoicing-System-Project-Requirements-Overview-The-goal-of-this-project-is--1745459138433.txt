@@ -1,0 +1,105 @@
+Job Management & Invoicing System - Project Requirements
+
+Overview
+
+The goal of this project is to develop a custom job management and invoicing system tailored for freelancers or service providers who charge based on either a daily rate or a fixed project price. The system will help manage clients, projects, workdays, and automate invoice generation and sending.
+
+Core Modules & Features
+
+    Client Management
+
+    Requirements:
+        Ability to add, view, edit, and delete clients.
+        Each client profile should include:
+            Company name
+            Contact person (optional)
+            Multiple email addresses
+            One designated email for billing purposes
+
+    Purpose:
+        Helps organize client information and streamline communication for invoicing and updates.
+
+    Project Management
+
+    Requirements:
+        Create projects based on:
+            Daily rate
+            Fixed project price
+        Associate each project with a specific client
+        Set start and end dates (optional)
+        Track project status (e.g., Open, In Progress, Completed)
+
+    Purpose:
+        Allows flexible project creation and linkage with clients for easy billing.
+
+    Calendar & Workday Tracking
+
+    Requirements:
+        Interactive calendar view
+        Select non-consecutive dates to indicate workdays
+        System should count selected dates and calculate the total amount automatically using the set day rate
+        Example: If the day rate is $200 and 6 days are selected (e.g., 1st, 2nd, 3rd, 6th, 8th, 11th), the total is $1200.
+
+    Purpose:
+        Tracks real workdays without needing consecutive or full-week input, providing flexible tracking.
+
+    Invoice Generation
+
+    Requirements:
+        Auto-generate invoice after selecting workdays
+        Include:
+            Client details
+            Workdays listed (optionally)
+            Rate, total calculation
+            Invoice number, date
+        Export as PDF
+        Option to send invoice via email to a selected address (e.g., billing department)
+
+    Purpose:
+        Automates the payment process, reduces manual calculation and document creation.
+
+    Email Integration
+
+    Requirements:
+        Integrate with Titan API (or any alternative SMTP service)
+        Ability to send invoices from within the system
+        Option to choose recipient from the client's listed emails
+
+    Purpose:
+        Ensures invoices are sent quickly and reliably without needing external tools.
+
+    Customization & UI
+
+    Requirements:
+        Use the Fuse AngularJS Material Design Admin Template
+        URL: https://preview.themeforest.net/item/fuse-angularjs-material-design-admin-template/full_screen_preview/12931855
+        Remove unused tabs and features from the template
+        Clean, intuitive dashboard focusing on:
+            Clients
+            Projects
+            Calendar
+            Invoices
+
+    Purpose:
+        Keeps the system focused, clean, and easy to use.
+
+Optional (Future) Features
+
+    Dashboard analytics (total earnings, active clients, etc.)
+    Recurring invoices
+    Payment tracking (paid/unpaid status)
+    Notifications & reminders
+
+
+Create modern and dark Ui with best color combination Best Ui experience.
+some Points to note,
+calender should be inside each project.
+every generated invoice could be sent as email so do email integration.
+Use database for storage and fetch make use of usestates good so that every change is reflected imediately on fronted.
+dont use dummy data anywhere make use of database or anything required.
+Each and every requirement should be fullfilled.
+Provide the complete application with frontend and backend integrated efficiently.
+
+importantly make sure every requirement in attached document is implemented.
+
+test each and every funtionality every bit of code by yourself.
