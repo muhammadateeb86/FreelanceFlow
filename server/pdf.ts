@@ -1,16 +1,8 @@
-import { Client, Invoice, Project, User, Workday } from "@shared/schema";
 
-interface InvoiceData {
-  invoice: Invoice;
-  client: Client;
-  project: Project;
-  workdays: Workday[];
-  user: User;
-}
+import { Client, Invoice, Project, Workday } from "@shared/schema";
 
 // Note: In a real implementation, this would use a proper PDF library
 // such as PDFKit. For this implementation, we're just returning a buffer 
-// as if we generated a PDF.
 export async function generateInvoicePDF(
   invoice: Invoice,
   client: Client,
@@ -22,7 +14,7 @@ export async function generateInvoicePDF(
   
   // For now, we're just returning a placeholder buffer 
   const dummyData = JSON.stringify({
-    invoice, client, project, workdays, user
+    invoice, client, project, workdays
   });
   
   // This simulates returning a PDF buffer

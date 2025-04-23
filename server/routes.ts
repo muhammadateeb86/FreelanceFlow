@@ -364,23 +364,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const pdfBuffer = await generateInvoicePDF(invoice, client, project, workdays.flat());
 
-      const emailSent = await sendEmail({
-        to: recipient,
-        subject,
-        text: message,
-        attachments: [
-          {
-            filename: `invoice-${invoice.invoiceNumber}.pdf`,
-            content: pdfBuffer,
-            contentType: 'application/pdf'
-          }
-        ]
-      });
+      try {
+        const emailSent = await sendEmail({
+          to: recipient,
+          subject,
+          text: message,
+          attachments: attachPdf ? [
+            {
+              filename: `invoice-${invoice.invoiceNumber}.pdf`,
+              content: pdfBuffer,
+              contentType: 'application/pdf'
+            }
+          ] : []
+        });
 
-      if (emailSent) {
-        res.json({ message: "Invoice email sent successfully" });
-      } else {
-        res.status(500).json({ message: "Failed to send invoice email" });
+        if (emailSent) {
+          res.json({ message: "Invoice email sent successfully" });
+        } else {
+          res.status(500).json({ message: "Failed to send invoice email" });
+        }
+      } catch (error) {
+        console.error('Email sending error:', error);
+        res.status(500).json({ message: "Failed to send invoice email", error: error.message });
       }
     } catch (error) {
       res.status(500).json({ message: "Failed to send invoice email" });
