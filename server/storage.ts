@@ -89,6 +89,23 @@ export class DatabaseStorage implements IStorage {
   }
   
   async deleteClient(id: number): Promise<boolean> {
+    // First delete all invoices associated with the client's projects
+    const clientProjects = await this.getProjectsByClientId(id);
+    for (const project of clientProjects) {
+      const projectInvoices = await this.getInvoicesByProjectId(project.id);
+      for (const invoice of projectInvoices) {
+        await db.delete(invoices).where(eq(invoices.id, invoice.id));
+      }
+      // Delete project workdays
+      await db.delete(workdays).where(eq(workdays.projectId, project.id));
+      // Delete the project
+      await db.delete(projects).where(eq(projects.id, project.id));
+    }
+
+    // Delete client's direct invoices
+    await db.delete(invoices).where(eq(invoices.clientId, id));
+    
+    // Finally delete the client
     const result = await db.delete(clients).where(eq(clients.id, id));
     return result.rowCount > 0;
   }
@@ -131,6 +148,13 @@ export class DatabaseStorage implements IStorage {
   }
   
   async deleteProject(id: number): Promise<boolean> {
+    // Delete project invoices
+    await db.delete(invoices).where(eq(invoices.projectId, id));
+    
+    // Delete project workdays
+    await db.delete(workdays).where(eq(workdays.projectId, id));
+    
+    // Delete the project
     const result = await db.delete(projects).where(eq(projects.id, id));
     return result.rowCount > 0;
   }
