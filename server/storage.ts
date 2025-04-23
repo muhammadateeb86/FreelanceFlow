@@ -75,7 +75,13 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createClient(client: InsertClient): Promise<Client> {
-    const [newClient] = await db.insert(clients).values(client).returning();
+    // Make sure emails is properly formatted as an array for PostgreSQL
+    const formattedClient = {
+      ...client,
+      emails: Array.isArray(client.emails) ? client.emails : []
+    };
+    
+    const [newClient] = await db.insert(clients).values(formattedClient).returning();
     return newClient;
   }
   
@@ -89,8 +95,25 @@ export class DatabaseStorage implements IStorage {
   }
   
   async deleteClient(id: number): Promise<boolean> {
-    const result = await db.delete(clients).where(eq(clients.id, id));
-    return !!result;
+    try {
+      // Get all projects for this client
+      const clientProjects = await this.getProjectsByClientId(id);
+      
+      // Delete each project (which will also delete associated workdays)
+      for (const project of clientProjects) {
+        await this.deleteProject(project.id);
+      }
+      
+      // Delete any invoices associated with this client
+      await db.delete(invoices).where(eq(invoices.clientId, id));
+      
+      // Finally delete the client
+      const result = await db.delete(clients).where(eq(clients.id, id));
+      return !!result;
+    } catch (error) {
+      console.error("Error deleting client:", error);
+      return false;
+    }
   }
   
   // Project operations
@@ -131,8 +154,17 @@ export class DatabaseStorage implements IStorage {
   }
   
   async deleteProject(id: number): Promise<boolean> {
-    const result = await db.delete(projects).where(eq(projects.id, id));
-    return !!result;
+    try {
+      // First delete all workdays associated with this project
+      await db.delete(workdays).where(eq(workdays.projectId, id));
+      
+      // Then delete the project
+      const result = await db.delete(projects).where(eq(projects.id, id));
+      return !!result;
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      return false;
+    }
   }
   
   // Workday operations
