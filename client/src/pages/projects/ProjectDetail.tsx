@@ -150,20 +150,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
   // Initialize selected days from workdays when data is loaded
   useEffect(() => {
     if (workdays.length > 0) {
-      const selectedDates = workdays.map(w => {
-        // Create proper UTC-consistent dates that won't have timezone issues
-        const parts = w.date.split('-');
-        const year = parseInt(parts[0]);
-        const month = parseInt(parts[1]) - 1; // Month is 0-indexed
-        const day = parseInt(parts[2]);
-        
-        // Create at noon UTC to avoid any day boundary issues
-        return new Date(Date.UTC(year, month, day, 12, 0, 0));
-      });
-      
+      const selectedDates = workdays.map(w => new Date(w.date));
       setSelectedDays(selectedDates);
-    } else {
-      setSelectedDays([]);
     }
   }, [workdays]);
   
@@ -244,14 +232,8 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
   const handleDayClick = (day: CalendarDay) => {
     if (day.isDisabled) return;
     
-    // Create a new date with the correct day to avoid timezone issues
-    // Use the same exact date from the day object to prevent off-by-one errors
-    const fixedDate = new Date(Date.UTC(
-      day.date.getFullYear(),
-      day.date.getMonth(),
-      day.date.getDate(),
-      12, 0, 0 // Set to noon UTC to avoid any timezone boundary issues
-    ));
+    // Clone the date to make sure we don't have timezone issues
+    const fixedDate = new Date(day.date.getFullYear(), day.date.getMonth(), day.date.getDate());
     
     // Toggle the workday in the database
     toggleWorkdayMutation.mutate(fixedDate);
@@ -307,19 +289,7 @@ const ProjectDetail: React.FC<ProjectDetailProps> = ({ projectId }) => {
       invoiceDate: invoiceDate.toISOString().split('T')[0],
       dueDate: dueDate.toISOString().split('T')[0],
       workdaysIds: workdays
-        .filter(w => {
-          // Parse the date consistently with how we create selectedDays
-          const parts = w.date.split('-');
-          const year = parseInt(parts[0]);
-          const month = parseInt(parts[1]) - 1; // Month is 0-indexed
-          const day = parseInt(parts[2]);
-          
-          // Create at noon UTC to avoid any day boundary issues
-          const workdayDate = new Date(Date.UTC(year, month, day, 12, 0, 0));
-          
-          // Compare the dates using toDateString() which ignores time components
-          return selectedDays.some(d => d.toDateString() === workdayDate.toDateString());
-        })
+        .filter(w => selectedDays.some(d => d.toDateString() === new Date(w.date).toDateString()))
         .map(w => w.id),
       notes: `Invoice for ${project.name}`,
     };

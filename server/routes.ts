@@ -11,44 +11,6 @@ import {
 } from "@shared/schema";
 import { generateInvoicePDF } from "./pdf";
 import { sendEmail } from "./email";
-import { User } from "@shared/schema";
-
-// Helper function to get or create a default user
-async function getOrCreateDefaultUser(): Promise<User> {
-  let user = await storage.getUser(1);
-  
-  if (!user) {
-    try {
-      // Create a default user for invoice generation
-      user = await storage.createUser({
-        username: "default",
-        password: "", // Not used for authentication in this app
-        name: "Your Business Name",
-        email: "your.email@example.com",
-        company: "Your Company",
-        address: "Your Address",
-        phone: "Your Phone Number"
-      });
-      console.log("Created default user with ID:", user.id);
-    } catch (error) {
-      console.error("Error creating default user:", error);
-      // Even if user creation fails, use fallback values
-      user = {
-        id: 1,
-        username: "default",
-        password: "",
-        name: "Your Business Name",
-        email: "your.email@example.com",
-        company: "Your Company",
-        address: "Your Business Address",
-        phone: "Your Phone Number",
-        createdAt: new Date().toISOString()
-      };
-    }
-  }
-  
-  return user;
-}
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Client routes

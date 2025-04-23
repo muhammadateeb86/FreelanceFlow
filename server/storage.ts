@@ -75,26 +75,14 @@ export class DatabaseStorage implements IStorage {
   }
   
   async createClient(client: InsertClient): Promise<Client> {
-    // Handle array conversion for emails field
-    const clientData = {
-      ...client,
-      emails: client.emails ? JSON.stringify(client.emails) : '[]'
-    };
-    
-    const [newClient] = await db.insert(clients).values(clientData).returning();
+    const [newClient] = await db.insert(clients).values(client).returning();
     return newClient;
   }
   
   async updateClient(id: number, clientUpdate: Partial<InsertClient>): Promise<Client | undefined> {
-    // Handle array conversion for emails field if it exists in the update
-    const updateData = { ...clientUpdate };
-    if (updateData.emails) {
-      updateData.emails = JSON.stringify(updateData.emails);
-    }
-    
     const [updatedClient] = await db
       .update(clients)
-      .set(updateData)
+      .set(clientUpdate)
       .where(eq(clients.id, id))
       .returning();
     return updatedClient || undefined;
@@ -202,35 +190,11 @@ export class DatabaseStorage implements IStorage {
       invoiceToInsert.invoiceNumber = await this.getNextInvoiceNumber();
     }
     
-    // Handle array conversion for workdaysIds field
-    if (invoiceToInsert.workdaysIds) {
-      // Store workdaysIds as a stringified JSON array
-      const jsonWorkdaysIds = JSON.stringify(invoiceToInsert.workdaysIds);
-      
-      // Create a safe copy for insertion with properly formatted workdaysIds
-      const safeInvoice = {
-        ...invoiceToInsert,
-        workdaysIds: jsonWorkdaysIds
-      };
-      
-      const [newInvoice] = await db
-        .insert(invoices)
-        .values(safeInvoice)
-        .returning();
-      return newInvoice;
-    } else {
-      // If no workdaysIds, insert with empty array
-      const safeInvoice = {
-        ...invoiceToInsert,
-        workdaysIds: '[]'
-      };
-      
-      const [newInvoice] = await db
-        .insert(invoices)
-        .values(safeInvoice)
-        .returning();
-      return newInvoice;
-    }
+    const [newInvoice] = await db
+      .insert(invoices)
+      .values(invoiceToInsert)
+      .returning();
+    return newInvoice;
   }
   
   async updateInvoiceStatus(id: number, status: string): Promise<Invoice | undefined> {
