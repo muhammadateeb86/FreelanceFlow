@@ -62,6 +62,7 @@ const Projects = () => {
         description: 'The project has been deleted successfully.',
       });
       queryClient.invalidateQueries({ queryKey: ['/api/projects'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/invoices'] });
       setProjectToDelete(null);
     },
     onError: (error) => {
