@@ -1,7 +1,7 @@
 
 import PDFDocument from 'pdfkit';
 import { Client, Invoice, Project, Workday } from "@shared/schema";
-import { formatCurrency, formatDate } from '@client/src/lib/utils';
+import { formatCurrency, formatDate } from '@shared/utils';
 
 export async function generateInvoicePDF(
   invoice: Invoice,
