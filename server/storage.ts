@@ -5,6 +5,8 @@ import {
   workdays, type Workday, type InsertWorkday,
   invoices, type Invoice, type InsertInvoice
 } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc } from "drizzle-orm";
 
 // Storage interface with all CRUD operations
 export interface IStorage {
@@ -44,195 +46,193 @@ export interface IStorage {
   getNextInvoiceNumber(): Promise<string>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private clients: Map<number, Client>;
-  private projects: Map<number, Project>;
-  private workdays: Map<number, Workday>;
-  private invoices: Map<number, Invoice>;
-  private userId: number;
-  private clientId: number;
-  private projectId: number;
-  private workdayId: number;
-  private invoiceId: number;
-  private invoiceCount: number;
-
-  constructor() {
-    this.users = new Map();
-    this.clients = new Map();
-    this.projects = new Map();
-    this.workdays = new Map();
-    this.invoices = new Map();
-    this.userId = 1;
-    this.clientId = 1;
-    this.projectId = 1;
-    this.workdayId = 1;
-    this.invoiceId = 1;
-    this.invoiceCount = 1;
-    
-    // Initialize with default user
-    this.createUser({
-      username: "admin",
-      password: "password", // In a real app, this would be hashed
-      name: "John Doe",
-      email: "john@example.com",
-      company: "FreelanceFlow",
-      address: "123 Main Street, New York, NY 10001",
-      phone: "+1 (123) 456-7890"
-    });
-  }
-
+// Database Implementation
+export class DatabaseStorage implements IStorage {
+  // User operations
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
   }
-
+  
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
   }
-
+  
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.userId++;
-    const now = new Date();
-    const user: User = { ...insertUser, id, createdAt: now };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
-
-  // Client methods
+  
+  // Client operations
   async getClients(): Promise<Client[]> {
-    return Array.from(this.clients.values());
+    return await db.select().from(clients);
   }
-
+  
   async getClient(id: number): Promise<Client | undefined> {
-    return this.clients.get(id);
+    const [client] = await db.select().from(clients).where(eq(clients.id, id));
+    return client || undefined;
   }
-
+  
   async createClient(client: InsertClient): Promise<Client> {
-    const id = this.clientId++;
-    const now = new Date();
-    const newClient: Client = { ...client, id, createdAt: now };
-    this.clients.set(id, newClient);
+    const [newClient] = await db.insert(clients).values(client).returning();
     return newClient;
   }
-
+  
   async updateClient(id: number, clientUpdate: Partial<InsertClient>): Promise<Client | undefined> {
-    const client = this.clients.get(id);
-    if (!client) return undefined;
-    
-    const updatedClient: Client = { ...client, ...clientUpdate };
-    this.clients.set(id, updatedClient);
-    return updatedClient;
+    const [updatedClient] = await db
+      .update(clients)
+      .set(clientUpdate)
+      .where(eq(clients.id, id))
+      .returning();
+    return updatedClient || undefined;
   }
-
+  
   async deleteClient(id: number): Promise<boolean> {
-    return this.clients.delete(id);
+    const result = await db.delete(clients).where(eq(clients.id, id));
+    return !!result;
   }
-
-  // Project methods
+  
+  // Project operations
   async getProjects(): Promise<Project[]> {
-    return Array.from(this.projects.values());
+    return await db.select().from(projects);
   }
-
+  
   async getProjectsByClientId(clientId: number): Promise<Project[]> {
-    return Array.from(this.projects.values()).filter(
-      (project) => project.clientId === clientId
-    );
+    return await db
+      .select()
+      .from(projects)
+      .where(eq(projects.clientId, clientId));
   }
-
+  
   async getProject(id: number): Promise<Project | undefined> {
-    return this.projects.get(id);
+    const [project] = await db
+      .select()
+      .from(projects)
+      .where(eq(projects.id, id));
+    return project || undefined;
   }
-
+  
   async createProject(project: InsertProject): Promise<Project> {
-    const id = this.projectId++;
-    const now = new Date();
-    const newProject: Project = { ...project, id, createdAt: now };
-    this.projects.set(id, newProject);
+    const [newProject] = await db
+      .insert(projects)
+      .values(project)
+      .returning();
     return newProject;
   }
-
+  
   async updateProject(id: number, projectUpdate: Partial<InsertProject>): Promise<Project | undefined> {
-    const project = this.projects.get(id);
-    if (!project) return undefined;
-    
-    const updatedProject: Project = { ...project, ...projectUpdate };
-    this.projects.set(id, updatedProject);
-    return updatedProject;
+    const [updatedProject] = await db
+      .update(projects)
+      .set(projectUpdate)
+      .where(eq(projects.id, id))
+      .returning();
+    return updatedProject || undefined;
   }
-
+  
   async deleteProject(id: number): Promise<boolean> {
-    return this.projects.delete(id);
+    const result = await db.delete(projects).where(eq(projects.id, id));
+    return !!result;
   }
-
-  // Workday methods
+  
+  // Workday operations
   async getWorkdaysByProjectId(projectId: number): Promise<Workday[]> {
-    return Array.from(this.workdays.values()).filter(
-      (workday) => workday.projectId === projectId
-    );
+    return await db
+      .select()
+      .from(workdays)
+      .where(eq(workdays.projectId, projectId));
   }
-
+  
   async createWorkday(workday: InsertWorkday): Promise<Workday> {
-    const id = this.workdayId++;
-    const now = new Date();
-    const newWorkday: Workday = { ...workday, id, createdAt: now };
-    this.workdays.set(id, newWorkday);
+    const [newWorkday] = await db
+      .insert(workdays)
+      .values(workday)
+      .returning();
     return newWorkday;
   }
-
+  
   async deleteWorkday(id: number): Promise<boolean> {
-    return this.workdays.delete(id);
+    const result = await db.delete(workdays).where(eq(workdays.id, id));
+    return !!result;
   }
-
-  // Invoice methods
+  
+  // Invoice operations
   async getInvoices(): Promise<Invoice[]> {
-    return Array.from(this.invoices.values());
+    return await db.select().from(invoices);
   }
-
+  
   async getInvoicesByClientId(clientId: number): Promise<Invoice[]> {
-    return Array.from(this.invoices.values()).filter(
-      (invoice) => invoice.clientId === clientId
-    );
+    return await db
+      .select()
+      .from(invoices)
+      .where(eq(invoices.clientId, clientId));
   }
-
+  
   async getInvoicesByProjectId(projectId: number): Promise<Invoice[]> {
-    return Array.from(this.invoices.values()).filter(
-      (invoice) => invoice.projectId === projectId
-    );
+    return await db
+      .select()
+      .from(invoices)
+      .where(eq(invoices.projectId, projectId));
   }
-
+  
   async getInvoice(id: number): Promise<Invoice | undefined> {
-    return this.invoices.get(id);
+    const [invoice] = await db
+      .select()
+      .from(invoices)
+      .where(eq(invoices.id, id));
+    return invoice || undefined;
   }
-
+  
   async createInvoice(invoice: InsertInvoice): Promise<Invoice> {
-    const id = this.invoiceId++;
-    const now = new Date();
-    const newInvoice: Invoice = { ...invoice, id, createdAt: now };
-    this.invoices.set(id, newInvoice);
+    // Generate invoice number if not provided
+    let invoiceToInsert = { ...invoice };
+    if (!invoiceToInsert.invoiceNumber) {
+      invoiceToInsert.invoiceNumber = await this.getNextInvoiceNumber();
+    }
+    
+    const [newInvoice] = await db
+      .insert(invoices)
+      .values(invoiceToInsert)
+      .returning();
     return newInvoice;
   }
-
+  
   async updateInvoiceStatus(id: number, status: string): Promise<Invoice | undefined> {
-    const invoice = this.invoices.get(id);
-    if (!invoice) return undefined;
-    
-    const updatedInvoice: Invoice = { ...invoice, status };
-    this.invoices.set(id, updatedInvoice);
-    return updatedInvoice;
+    const [updatedInvoice] = await db
+      .update(invoices)
+      .set({ status })
+      .where(eq(invoices.id, id))
+      .returning();
+    return updatedInvoice || undefined;
   }
-
+  
   async deleteInvoice(id: number): Promise<boolean> {
-    return this.invoices.delete(id);
+    const result = await db.delete(invoices).where(eq(invoices.id, id));
+    return !!result;
   }
-
+  
   async getNextInvoiceNumber(): Promise<string> {
-    // Format: INV-YEAR-SEQUENCE (e.g., INV-2023-001)
+    // Get the latest invoice to determine the next number
+    const [latestInvoice] = await db
+      .select()
+      .from(invoices)
+      .orderBy(desc(invoices.id))
+      .limit(1);
+    
     const year = new Date().getFullYear();
-    const sequence = this.invoiceCount++;
-    return `INV-${year}-${sequence.toString().padStart(3, '0')}`;
+    let nextNum = 1;
+    
+    if (latestInvoice && latestInvoice.invoiceNumber) {
+      // Try to extract the number from the existing format (e.g., INV-2025-001)
+      const match = latestInvoice.invoiceNumber.match(/INV-\d+-(\d+)/);
+      if (match && match[1]) {
+        nextNum = parseInt(match[1], 10) + 1;
+      }
+    }
+    
+    return `INV-${year}-${String(nextNum).padStart(3, '0')}`;
   }
 }
 
-export const storage = new MemStorage();
+// Initialize the database storage
+export const storage = new DatabaseStorage();

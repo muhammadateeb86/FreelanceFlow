@@ -43,15 +43,13 @@ const Projects = () => {
   // Fetch projects
   const { data: projects = [], isLoading: projectsLoading, refetch } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000 // Refresh every 5 seconds
+    refetchOnWindowFocus: true
   });
   
   // Fetch clients for mapping client names
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
     queryKey: ['/api/clients'],
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000 // Refresh every 5 seconds
+    refetchOnWindowFocus: true
   });
   
   // Delete project mutation

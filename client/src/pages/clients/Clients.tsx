@@ -40,8 +40,7 @@ const Clients = () => {
   
   const { data: clients = [], isLoading, refetch } = useQuery<Client[]>({
     queryKey: ['/api/clients'],
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000 // Refresh every 5 seconds
+    refetchOnWindowFocus: true
   });
   
   // Delete client mutation

@@ -42,22 +42,19 @@ const Invoices = () => {
   // Fetch invoices
   const { data: invoices = [], isLoading: invoicesLoading, refetch } = useQuery<Invoice[]>({
     queryKey: ['/api/invoices'],
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000 // Refresh every 5 seconds
+    refetchOnWindowFocus: true
   });
   
   // Fetch clients for mapping client names
   const { data: clients = [], isLoading: clientsLoading } = useQuery<Client[]>({
     queryKey: ['/api/clients'],
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000 // Refresh every 5 seconds
+    refetchOnWindowFocus: true
   });
   
   // Fetch projects for mapping project names
   const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
-    refetchOnWindowFocus: true,
-    refetchInterval: 5000 // Refresh every 5 seconds
+    refetchOnWindowFocus: true
   });
   
   // Delete invoice mutation
