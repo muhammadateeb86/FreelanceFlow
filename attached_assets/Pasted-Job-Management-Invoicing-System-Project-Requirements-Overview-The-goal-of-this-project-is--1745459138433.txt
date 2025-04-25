@@ -89,17 +89,3 @@ Optional (Future) Features
     Recurring invoices
     Payment tracking (paid/unpaid status)
     Notifications & reminders
-
-
-Create modern and dark Ui with best color combination Best Ui experience.
-some Points to note,
-calender should be inside each project.
-every generated invoice could be sent as email so do email integration.
-Use database for storage and fetch make use of usestates good so that every change is reflected imediately on fronted.
-dont use dummy data anywhere make use of database or anything required.
-Each and every requirement should be fullfilled.
-Provide the complete application with frontend and backend integrated efficiently.
-
-importantly make sure every requirement in attached document is implemented.
-
-test each and every funtionality every bit of code by yourself.
